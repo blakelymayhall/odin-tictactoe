@@ -1,6 +1,7 @@
 // Game Board 
 // Responsibility:
-
+    // manage the internal board and check win conditions and 
+    // error conditions
 const GameBoard = (() => {
     let gameBoard = null;
 
@@ -11,6 +12,7 @@ const GameBoard = (() => {
             [null,null,null]];
     };
 
+    // Check that the game board cell is empty
     const isValidPlay = (x,y) => {
         return gameBoard[y][x] == null ? true : false;
     };
@@ -19,6 +21,8 @@ const GameBoard = (() => {
         gameBoard[y][x] = player.getPlayerPiece();
     };
 
+    // Loop over rows of 2d array and check for 
+    // three of the same game piece
     const checkThreeInRow = (arr, player) => {
         for (let ii = 0; ii < arr.length; ii++) {
             const threeInRow = arr[ii].every((e) => {
@@ -31,6 +35,9 @@ const GameBoard = (() => {
         }
     };
 
+    // Check rows (normal gameboard), columns 
+    // (transposed game board, and diagonals to see
+    // if there is any winning run
     const checkWin = (player) => {
         if(checkThreeInRow(gameBoard, player)) {
             return true;
@@ -59,7 +66,7 @@ const GameBoard = (() => {
 
 // Game Manager 
 // Responsibility:
-
+    // initializing the game and processing user turns
 const GameManager = (() => {
 
     const GAME_STATES = {
@@ -144,11 +151,11 @@ const GameManager = (() => {
 
 // Display Manager
 // Responsibility:
-
+    // DOM manipulation to display the game progress
 const DisplayManager = (() => {
 
     const disableButton = () => {
-        document.querySelector("button").disabled = true;
+        document.querySelector(".gameWindow button").disabled = true;
     };
 
     const addPieceToBoard = (gameBoardCell, pieceString) => {
@@ -190,7 +197,8 @@ const DisplayManager = (() => {
 
 // Player Object
 // Responsibility:
-
+    // Factory function to provide the game with player objects. Player 
+    // Objects have a name and an assigned piece (x or o)
 const Player = () => {
 
     let playerName;
