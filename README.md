@@ -20,3 +20,20 @@ Intent is to implement a browser tic tac toe game and utilize javascript objects
 - Began implementing html/css to achieve the freeform design
     - As always, ideas came to me while implementing.
 - Create the gameboard via grid and use the background of the grid to be the actual board axes
+
+8/28/23
+- Finalized MVP
+- Game works as expected
+- Created objects for gameboard, gamemanager, display manager, and player
+    - gameboard (IIFE) handles the manipulation of the internal board. error checks user selections and win conditions
+    - gamemanager (IIFE) initializes the players, gameboard, and display and also processes turns
+    - display manager (IIFE) updates the dom with relevant info (game pieces, log information)
+    - players (factory function) are basic objects with a name and a piece (x, o) assigned
+
+TODO:
+    - Start-up form to implement:
+        - player names
+        - option to play COM
+    - Play again feature
+    - COM 
+    - Score Tally
