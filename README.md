@@ -30,11 +30,15 @@ Intent is to implement a browser tic tac toe game and utilize javascript objects
     - display manager (IIFE) updates the dom with relevant info (game pieces, log information)
     - players (factory function) are basic objects with a name and a piece (x, o) assigned
 
+8/29/23
+- Noted and fixed two areas where code could be cleaned up in git issues
+- Showed game to wife, she suggested removing the log history as it is only adding confusion
+    - Change log history to chronically show players pieces and only show latest "who's turn" statement
+- Cleaned up player init
+- Added tie logic
+- Added play again feature
+- Added player configuration form (shows option to play com but still not implemented)
+
 TODO:
-    - Start-up form to implement:
-        - player names
-        - option to play COM
-    - Play again feature
     - COM 
     - Score Tally
-    - Tie Handling

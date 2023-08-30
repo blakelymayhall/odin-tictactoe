@@ -12,6 +12,21 @@
     <p class="subtitle">Get Three in a Row!</p>
     <div class="gameWindowBackground">
         <div class="gameWindow">
+            <form id="configPlayersOverlay">
+                <p>Configure Players:</p>
+                <label for="playerOneName">Player One Name:</label>
+                <input type="text" id="playerOneName" name="playerOneName">
+                <label for="playerTwoName">Player Two Name:</label>
+                <input type="text" id="playerTwoName" name="playerTwoName" placeholder="Gene">
+                <div>
+                    <label for="playCOM">Play Against COM?</label>
+                    <input type="checkbox" id="playCOM" name="playCOM">
+                </div>
+                <div>
+                    <button type="button" class="closeForm">Close</button>
+                    <button type="button" class="confirmForm">Confirm</button>
+                </div>
+            </form>
             <div class="gameBoard">
                 <div class="gameBoardCell" data-x="0" data-y="0"></div>
                 <div class="gameBoardCell" data-x="1" data-y="0"></div>
@@ -23,9 +38,16 @@
                 <div class="gameBoardCell" data-x="1" data-y="2"></div>
                 <div class="gameBoardCell" data-x="2" data-y="2"></div>
             </div>
-            <button>Play Game!</button>
+            <button class="playButton">Play Game!</button>
             <div class="gameInfo">
-                <!-- populate log text here - only allow at most three entries -->
+                <div class="playerInfo">
+                    <!-- 
+                    Auto-Gen this
+                    <p>Player One: X's</p> 
+                    <p>Player Two: O's</p>
+                    -->
+                </div>
+                <p class="gameLog"></p>
             </div>
         </div>
     </div>

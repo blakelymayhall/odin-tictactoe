@@ -39,28 +39,25 @@ const GameBoard = (() => {
     // (transposed game board, and diagonals to see
     // if there is any winning run
     const checkWin = (player) => {
-        if(checkThreeInRow(gameBoard, player)) {
-            return true;
-        }
-
         const gameBoardT = gameBoard[0].map((x,i) => gameBoard.map(x => x[i]));
-        if(checkThreeInRow(gameBoardT, player)) {
-            return true;
-        }
-
         const diags = [gameBoard.map((x, i) => x[i]),gameBoard.map((x,i) => x[x.length-i-1])];
-        if(checkThreeInRow(diags, player)) {
-            return true;
-        }
+        let allRuns = gameBoard.concat(gameBoardT).concat(diags);
+        return checkThreeInRow(allRuns, player);
+    };
 
-        return false;
+    // Check if any nulls in gameboard
+    // if true, then the game is tied (since check win is 
+    // called first)
+    const checkTie = () => {
+        return !gameBoard.some(row => row.includes(null));
     };
 
     return {
         clearGameBoard,
         isValidPlay,
         addPieceToBoard,
-        checkWin
+        checkWin,
+        checkTie
     }
 })();
 
@@ -68,7 +65,6 @@ const GameBoard = (() => {
 // Responsibility:
     // initializing the game and processing user turns
 const GameManager = (() => {
-
     const GAME_STATES = {
         PRE_INIT: Symbol("Pre_Init"),
         PLAYING: Symbol("Playing"),
@@ -85,31 +81,28 @@ const GameManager = (() => {
     let gameState = GAME_STATES.PRE_INIT;
 
     const initializeGame = () => {
-        // Disable button
-        DisplayManager.disableButton();
+        // Clean Game Info, Toggle Button, gameboard
+        // and change to a play again button
+        DisplayManager.resetGame();
 
-        // Clear game board
+        // Clear internal game board
         GameBoard.clearGameBoard();
 
-        // Initialize players 
-        player1 = Player();
-        player1.setPlayerName("Player One");
-        player2 = Player();
-        player2.setPlayerName("Player Two");
-
+        // Initialize Players
         // Randomize who gets X and O
         //    Make array of the possible game pieces and randomly 
         //    assign to each player
         const pieces = [GAME_PIECES.X, GAME_PIECES.O];
         const rand = Math.floor(Math.random()*pieces.length);
-        player1.setPlayerPiece(pieces[rand]);
-        player2.setPlayerPiece(pieces[rand == 0 ? 1 : 0]);
+        const playerConfigFormData = new FormData(document.forms.configPlayersOverlay);
+        player1 = Player(playerConfigFormData.get("playerOneName"), pieces[rand]);
+        player2 = Player(playerConfigFormData.get("playerTwoName"), pieces[rand == 0 ? 1 : 0]);
 
         // Set active player (player who got X)
         player1.getPlayerPiece() === GAME_PIECES.X ? activePlayer = player1 : activePlayer = player2;
         
-        DisplayManager.addToLog(`${activePlayer.getPlayerName()} is X's`);
-        DisplayManager.addToLog(`${activePlayer.getPlayerName()}'s (${activePlayer.getPlayerPiece().description}'s) Turn`);
+        DisplayManager.displayPlayers([player1,player2]);
+        DisplayManager.addToLog(`${activePlayer.getPlayerName()}'s Turn`);
 
         gameState = GAME_STATES.PLAYING;
     };
@@ -130,20 +123,28 @@ const GameManager = (() => {
         GameBoard.addPieceToBoard(activePlayer, gameBoardCell.dataset.x, gameBoardCell.dataset.y);
         DisplayManager.addPieceToBoard(gameBoardCell, activePlayer.getPlayerPiece().description);
 
-        // Check win condition
+        // Check win/tie condition
+        // if neither, continue game
         if (GameBoard.checkWin(activePlayer)) {
             DisplayManager.addToLog(`${activePlayer.getPlayerName()} Wins!`);
             gameState = GAME_STATES.OVER;
+            DisplayManager.toggleButton();
+            return;
         }
-        else {
-            // Toggle active player
-            activePlayer === player1 ? activePlayer = player2 : activePlayer = player1; 
-            DisplayManager.addToLog(`${activePlayer.getPlayerName()}'s (${activePlayer.getPlayerPiece().description}'s) Turn`);
+        
+        if (GameBoard.checkTie()) {
+            DisplayManager.addToLog(`It's a Tie!`);
+            gameState = GAME_STATES.OVER;
+            DisplayManager.toggleButton();
+            return;
         }
+
+        // Toggle active player
+        activePlayer === player1 ? activePlayer = player2 : activePlayer = player1; 
+        DisplayManager.addToLog(`${activePlayer.getPlayerName()}'s Turn`);
     };
 
     return {
-        GAME_PIECES,
         initializeGame,
         processTurn
     }
@@ -153,9 +154,13 @@ const GameManager = (() => {
 // Responsibility:
     // DOM manipulation to display the game progress
 const DisplayManager = (() => {
+    const logEntry = document.querySelector(".gameInfo .gameLog");
+    const playerInfo = document.querySelector(".gameInfo .playerInfo");
+    const playButton = document.querySelector(".gameWindow .playButton");
+    const playerConfigWindow = document.querySelector("#configPlayersOverlay");
 
-    const disableButton = () => {
-        document.querySelector(".gameWindow button").disabled = true;
+    const toggleButton = () => {
+        playButton.disabled = !playButton.disabled;
     };
 
     const addPieceToBoard = (gameBoardCell, pieceString) => {
@@ -166,32 +171,47 @@ const DisplayManager = (() => {
         gameBoardCell.appendChild(gameBoardPiece);
     };
 
-    const addToLog = (text) => {
-        const logEntries = document.querySelectorAll(".gameInfo p");
-        if(logEntries.length == 3) {
-            //delete the first one 
-            logEntries[0].parentElement.removeChild(logEntries[0]);
-        }
+    const displayPlayers = (players) => {
+        players.forEach( (player) => {
+            const playerText = document.createElement("p");
+            playerText.textContent = `${player.getPlayerName()}: ${player.getPlayerPiece().description}'s`
+            playerInfo.appendChild(playerText);
+        });
+    }
 
-        const newLogEntry = document.createElement("p");
-        newLogEntry.textContent = text;
-        document.querySelector(".gameInfo").appendChild(newLogEntry);
+    const addToLog = (text) => {
+        logEntry.textContent = text;
     };
 
-    const clearLog = () => {
-        const logEntries = document.querySelectorAll(".gameInfo p");
-        logEntries.forEach( (logEntry) => {
-            logEntry.parentElement.removeChild(logEntry);
+    const togglePlayerConfig = () => {
+        playerConfigWindow.style.display === "flex" ? 
+            playerConfigWindow.style.display = "none" : 
+            playerConfigWindow.style.display = "flex";
+    };
+
+    const resetGame = () => {
+        // Toggle Button Off, Change to Play Again Button 
+        toggleButton();
+        playButton.textContent = "Play Again?";
+
+        // Delete all game pieces and player infos
+        const toDelete = document.querySelectorAll(".playerInfo p, .gameBoardPiece");
+        toDelete.forEach((e) => {
+            e.parentElement.removeChild(e);
         });
+
+        // Clear turn string
+        logEntry.textContent = "";
     };
 
     return {
-        disableButton,
+        toggleButton,
+        resetGame,
+        addPieceToBoard,
+        displayPlayers,
         addToLog,
-        clearLog,
-        addPieceToBoard
+        togglePlayerConfig
     }
-
 })();
 
 
@@ -199,31 +219,27 @@ const DisplayManager = (() => {
 // Responsibility:
     // Factory function to provide the game with player objects. Player 
     // Objects have a name and an assigned piece (x or o)
-const Player = () => {
-
-    let playerName;
-    let playerPiece;
-
-    const setPlayerName = (name) => {
-        playerName = name;
-    };
-    const setPlayerPiece = (piece) => {
-        playerPiece = piece;
-    };
+const Player = (playerName, playerPiece) => {
     const getPlayerName = () => playerName;
     const getPlayerPiece = () => playerPiece; 
 
     return {
-        setPlayerName,
-        setPlayerPiece,
         getPlayerName,
         getPlayerPiece
     }
 };
 
-// Start Game Button
-const playGameButton = document.querySelector(".gameWindow button");
-playGameButton.addEventListener("click", () => {
+// Buttons that toggle the player config form
+const formButtons = document.querySelectorAll(".gameWindow .playButton, .gameWindow .closeForm, .gameWindow .confirmForm");
+formButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+        DisplayManager.togglePlayerConfig();
+    })
+});
+
+// Confirm the player config form - this starts the game
+const submitFormButton = document.querySelector(".confirmForm");
+submitFormButton.addEventListener("click", () => {
     GameManager.initializeGame();
 });
 
