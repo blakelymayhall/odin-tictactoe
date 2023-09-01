@@ -96,26 +96,31 @@ const GameManager = (() => {
         const rand = Math.floor(Math.random()*pieces.length);
         const playerConfigFormData = new FormData(document.forms.configPlayersOverlay);
         player1 = Player(playerConfigFormData.get("playerOneName"), pieces[rand]);
-        player2 = Player(playerConfigFormData.get("playerTwoName"), pieces[rand == 0 ? 1 : 0]);
+        player2 = Player(playerConfigFormData.get("playerTwoName"), pieces[rand == 0 ? 1 : 0], 
+            playerConfigFormData.get("playCOM") == "on");
 
         // Set active player (player who got X)
         player1.getPlayerPiece() === GAME_PIECES.X ? activePlayer = player1 : activePlayer = player2;
-        
+
+        // Print to log the player names and who's turn it is
         DisplayManager.displayPlayers([player1,player2]);
         DisplayManager.addToLog(`${activePlayer.getPlayerName()}'s Turn`);
 
+        // Set game state to playing so moves can be made
         gameState = GAME_STATES.PLAYING;
+
+        // Process COM move if there is a COM and it is their turn
+        if (activePlayer === player2 && player2.getIsCOM()) {
+            processComMove();
+        }
     };
 
     const processTurn = (gameBoardCell) => {
 
         // Verify we are playing the game
-        if (gameState != GAME_STATES.PLAYING) {
-            return;
-        }
-
         // Verify the cell not already taken
-        if (!GameBoard.isValidPlay(gameBoardCell.dataset.x,gameBoardCell.dataset.y)) {
+        if (gameState != GAME_STATES.PLAYING || 
+            !GameBoard.isValidPlay(gameBoardCell.dataset.x,gameBoardCell.dataset.y)) {
             return;
         }
 
@@ -137,6 +142,25 @@ const GameManager = (() => {
         // Toggle active player
         activePlayer === player1 ? activePlayer = player2 : activePlayer = player1; 
         DisplayManager.addToLog(`${activePlayer.getPlayerName()}'s Turn`);
+
+        // Process COM move if there is a COM
+        if (activePlayer === player2 && player2.getIsCOM()) {
+            processComMove();
+        }
+    };
+
+    const processComMove = () => {
+        // Randomly determine a cell to play that is valid
+        let x, y;
+        while(true) {
+            x = Math.floor(Math.random()*3);
+            y = Math.floor(Math.random()*3);
+
+            if (GameBoard.isValidPlay(x,y)) {
+                break;
+            }
+        }
+        processTurn(document.querySelector(`[data-x="${x}"][data-y="${y}"]`))
     };
 
     return {
@@ -214,13 +238,15 @@ const DisplayManager = (() => {
 // Responsibility:
     // Factory function to provide the game with player objects. Player 
     // Objects have a name and an assigned piece (x or o)
-const Player = (playerName, playerPiece) => {
+const Player = (playerName, playerPiece, isCOM = false) => {
     const getPlayerName = () => playerName;
     const getPlayerPiece = () => playerPiece; 
-
+    const getIsCOM = () => isCOM; 
+ 
     return {
         getPlayerName,
-        getPlayerPiece
+        getPlayerPiece,
+        getIsCOM
     }
 };
 
@@ -244,7 +270,6 @@ function validateForm() {
     }
     return true;
 }
-
 const submitFormButton = document.querySelector(".confirmForm");
 submitFormButton.addEventListener("click", () => {
     if(validateForm()) {

@@ -42,7 +42,7 @@ Intent is to implement a browser tic tac toe game and utilize javascript objects
 
 8/31/23 
 - Added form validation 
+- Added unintellegent COM that randomly selects cells
 
 TODO:
-    - COM 
     - Score Tally
