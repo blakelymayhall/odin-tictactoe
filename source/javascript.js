@@ -125,15 +125,10 @@ const GameManager = (() => {
 
         // Check win/tie condition
         // if neither, continue game
-        if (GameBoard.checkWin(activePlayer)) {
-            DisplayManager.addToLog(`${activePlayer.getPlayerName()} Wins!`);
-            gameState = GAME_STATES.OVER;
-            DisplayManager.toggleButton();
-            return;
-        }
-        
-        if (GameBoard.checkTie()) {
-            DisplayManager.addToLog(`It's a Tie!`);
+        if (GameBoard.checkWin(activePlayer) || GameBoard.checkTie()) {
+            GameBoard.checkWin(activePlayer) ? 
+                DisplayManager.addToLog(`${activePlayer.getPlayerName()} Wins!`) :
+                DisplayManager.addToLog(`It's a Tie!`);
             gameState = GAME_STATES.OVER;
             DisplayManager.toggleButton();
             return;
@@ -230,7 +225,7 @@ const Player = (playerName, playerPiece) => {
 };
 
 // Buttons that toggle the player config form
-const formButtons = document.querySelectorAll(".gameWindow .playButton, .gameWindow .closeForm, .gameWindow .confirmForm");
+const formButtons = document.querySelectorAll(".playButton, .closeForm, .confirmForm");
 formButtons.forEach((button) => {
     button.addEventListener("click", () => {
         DisplayManager.togglePlayerConfig();
@@ -238,9 +233,23 @@ formButtons.forEach((button) => {
 });
 
 // Confirm the player config form - this starts the game
+function validateForm() {
+    const playerOneName = document.forms.configPlayersOverlay["playerOneName"].value;
+    const playerTwoName = document.forms.configPlayersOverlay["playerTwoName"].value;
+    const invalidForm = playerOneName.length < 2 || playerOneName.length > 12 || 
+        playerTwoName.length < 2 || playerTwoName.length > 12; 
+    if (invalidForm) {
+      alert("Names must be between 2 and 12 characters");
+      return false;
+    }
+    return true;
+}
+
 const submitFormButton = document.querySelector(".confirmForm");
 submitFormButton.addEventListener("click", () => {
-    GameManager.initializeGame();
+    if(validateForm()) {
+        GameManager.initializeGame();
+    }
 });
 
 // Grid Cell Actions

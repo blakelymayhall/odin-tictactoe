@@ -39,6 +39,10 @@ Intent is to implement a browser tic tac toe game and utilize javascript objects
 - Added play again feature
 - Added player configuration form (shows option to play com but still not implemented)
 
+
+8/31/23 
+- Added form validation 
+
 TODO:
     - COM 
     - Score Tally
