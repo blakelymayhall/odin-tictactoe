@@ -1,3 +1,18 @@
+
+const mobileTest = /Android|webOS|iPhone|iPad|iPod|BlackBerry|BB|PlayBook|IEMobile|Windows Phone|Kindle|Silk|Opera Mini/i.test(navigator.userAgent);
+  // Take the user to a different screen here.
+
+if (!mobileTest) {
+  document.querySelector(".gameWindowBackground").style.display = "flex";
+  document.getElementById("mobileProtector").style.display = "none";
+} else {
+  const override = document.querySelector("#mobileProtectorOveride");
+  override.addEventListener("click", () => {
+    document.querySelector(".gameWindowBackground").style.display = "flex";
+    document.getElementById("mobileProtector").style.display = "none";
+  });
+}
+
 // Game Board 
 // Responsibility:
     // manage the internal board and check win conditions and 
@@ -12,8 +27,8 @@ const GameBoard = (() => {
             [null,null,null]];
     };
 
-    // Check that the game board cell is empty
     const isValidPlay = (x,y) => {
+        // Check that the game board cell is empty
         return gameBoard[y][x] == null ? true : false;
     };
 

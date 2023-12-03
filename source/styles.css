@@ -147,3 +147,15 @@ html, body {
     min-height: 29.43px;
     max-height: 29.43px;
 }
+
+#mobileProtector {
+    margin-top: 10vh;
+    width: 100vw;
+    height: 100vh;
+    text-align: center;
+}
+
+#mobileProtectorOveride {
+    margin-top: 40vh;
+    padding: 2%;
+}
